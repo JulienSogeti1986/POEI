@@ -85,7 +85,7 @@
     file: path=/var/www/html/mysite/ state=directory
 
   - name: Copy mysite web files to the webserver
-    template: src={{ item.src }} dest={{ item.dest }}
+    copy: src={{ item.src }} dest={{ item.dest }}
     with_items:
      - { src: 'projetFinal/Creation_julien.sql', dest: '/var/www/html/projetFinal/Creation_julien.sql'}
      - { src: 'projetFinal/index.php', dest: '/var/www/html/projetFinal/index.php' }
