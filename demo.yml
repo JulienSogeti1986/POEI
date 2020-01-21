@@ -44,6 +44,11 @@
       src: stage.sql
       dest: /tmp
 
+  - name: supprime une éventuelle BDD "stage"
+    mysql_db:
+      name: "{{ dbname }}"
+      state: absent
+
   - name: Create the database "stage" with init with stage.sql for website
     mysql_db:
       name: "{{ dbname }}"
@@ -74,23 +79,15 @@
       permanent: true
       state: enabled
 
-  - name: Restart the firewalld service to load in the firewall changes
-    service: 
-      name: firewalld 
-      state: restarted
-
   - name: Create mysite directory if not exists
     file: path=/var/www/html/webfiles/ state=directory
 
-  - name: Copy mysite web files to the webserver
+  - name: Copie du dossier webfiles/ to the distant server
     copy:
-      src: ./webfiles/Creation_julien.sql
-      dest: /var/www/html/webfiles/Creation_julien.sql
+      src: ./webfiles
+      dest: /var/www/html/
 
-  - name: Copy mysite web files to the webserver
-    copy:
-      src: ./webfiles/index.php
-      dest: /var/www/html/webfiles/index.php
+
    
      
 
