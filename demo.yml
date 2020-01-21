@@ -84,12 +84,12 @@
 
   - name: Copy mysite web files to the webserver
     copy:
-      src: webfiles/Creation_julien.sql
+      src: ./webfiles/Creation_julien.sql
       dest: /var/www/html/webfiles/Creation_julien.sql
 
   - name: Copy mysite web files to the webserver
     copy:
-      src: /webfiles/index.php
+      src: ./webfiles/index.php
       dest: /var/www/html/webfiles/index.php
    
      
