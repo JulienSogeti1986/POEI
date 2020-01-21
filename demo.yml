@@ -87,10 +87,15 @@
 #      src: ./webfiles
 #      dest: /var/www/html/
 
-  - name: Ansible Template Example
-    template:
-      src: param.php.j2
-      dest: /var/www/html/webfiles/param.php
+#  - name: Ansible Template Example
+#    template:
+#      src: param.php.j2
+#      dest: /var/www/html/webfiles/param.php
+
+  - name: Copy mysite web files to the webserver
+    template: src={{ item.src }} dest={{ item.dest }}
+    with_items:
+     - { src: './webfiles/affichage.php.j2', dest: '/var/www/html/webfiles/affichage.php' }
 
    
      

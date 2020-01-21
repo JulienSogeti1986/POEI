@@ -8,8 +8,8 @@ CREATE TABLE `gares` (
 
 CREATE TABLE `tgv` (
   `id_TGV` int(20) NOT NULL,
-  `Date_depart` datetime(6) NOT NULL,
-  `Date_arrivee` datetime(6) NOT NULL,
+  `Date_depart` datetime NOT NULL,
+  `Date_arrivee` datetime NOT NULL,
   `id_gare_depart` int(20) NOT NULL,
   `id_gare_arrivee` int(20) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
