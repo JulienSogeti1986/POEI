@@ -1,0 +1,8 @@
+
+Pour permettre au serveur Ansible de se connecter au serveur BDD, il faut mettre à jour la librairie python du serveur BDD.
+
+ACTION:
+Sur le serveur BDD, faire les étapes suivantes:
+https://stackoverflow.com/questions/53003306/mysql-user-modue-is-showing-error-when-running-in-centos7
+
+
