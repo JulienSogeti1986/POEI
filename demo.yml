@@ -87,7 +87,7 @@
   - name: Copy mysite web files to the webserver
     template: src={{ item.src }} dest={{ item.dest }}
     with_items:
-     - { src: 'projetFinal/Creation_julien.sql', dest: '/var/www/html/projetFinal/Creation_julien.sql}
+     - { src: 'projetFinal/Creation_julien.sql', dest: '/var/www/html/projetFinal/Creation_julien.sql'}
      - { src: 'projetFinal/index.php', dest: '/var/www/html/projetFinal/index.php' }
      
 
