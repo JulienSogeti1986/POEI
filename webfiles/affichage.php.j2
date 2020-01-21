@@ -1,4 +1,4 @@
-//// Connexion base de données
+
 
 <?php
 
@@ -13,32 +13,23 @@ $dbname = "{{ hostvars['demoserver1'].dbname }}";
 
 
 
-$link = mysqli_connect($servername , $username, $password);
+$link = mysqli_connect($servername, $username, $password);
 if (!$link) {
    die('Impossible de se connecter : ' . mysqli_error());
 }
 
 // Rendre la base de données foo, la base courante
-$db_selected = mysqli_select_db($dbname, $link);
+$db_selected = mysqli_select_db($link, $dbname);
 if (!$db_selected) {
    die ('Impossible de sélectionner la base de données : ' . mysqli_error());
 }
 
-?>
 
-///// Affichage tableau
-
-
-<?php
-
-$servername = "{{ hostvars['demoserver1'].ansible_host }}";
-$username = "{{ hostvars['demoserver1'].dbuser }}";
-$password = "{{ hostvars['demoserver1'].upassword }}";
-$dbname = "{{ hostvars['demoserver1'].dbname }}";
 
 // C'est la meilleur façon d'exécuter une requête SQL
 // Pour plus d'exemples, voir mysql_real_escape_string()
-$query = "select * from tgv";
+
+$query = "SELECT id_TGV as tid, gd.  ";
 
 // Exécution de la requête
 $result = mysqli_query($query);
