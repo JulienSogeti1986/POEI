@@ -1,101 +1,70 @@
 ---
-### CentOS 7 PHP MySQL Stack
-### Bruno Zeitouni
-### Version: 1.0
 
-- name: This sets up a mysql dbserver
+
+- name: ajout du Master Serveur
 
   hosts: prodserver1
   remote_user: root
 
   tasks:
 
-  - name: desactivation mariadb à cause des bidouilles
-    yum:
-      name: mariadb-server
-      state: absent
 
-  - name: Install MySQL Software Repo
+################## INSTALLATION Docker #############################
+
+  - name: Installation des packages
     yum:
-      name: http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+      name: "{{ item }}" 
       state: present
-
-  - name: Install MySQL Database and MySQL-python
-    yum: name={{ item }} state=present
     with_items:
-     - mysql-server
-     - MySQL-python
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
 
-  - name: Start & Enable MySQL Server to start on boot
-    service: name=mysqld state=started enabled=yes
+  - name: Set up d'un repository stable
+    shell : yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-  - name: desactiver SELinux
-    shell: "setenforce 0"
-
-  - name: desactiver firewall
-    shell: "systemctl stop firewalld"
-
-  - name: Create database user with name 'dbuser' and password 'upassword' with all database privileges
-    mysql_user:
-#      login_user: 'root'
-#      login_password:  
-#      host: '%'
-      name: '{{ dbuser }}'
-      password: '{{ upassword }}'
-      priv: '*.*:ALL'
-      state: present
-
-  - name: Copy database dump file to remote host
-    copy:
-      src: stage.sql
-      dest: /tmp
-
-  - name: Create the database "stage" with init with stage.sql for website
-    mysql_db:
-      name: "{{ dbname }}"
-      state: import
-      target: /tmp/stage.sql
-
-  
-
-
-- name: This sets up an httpd webserver
-  hosts: webserver1
-  tasks:
-  - name: Install apache packages 
+  - name: Installation Docker Engine
     yum:
-      name: httpd
+      name: "{{ item }}" 
       state: present
-
-  - name: Install httpd and php
-    yum: name={{ item }} state=present
     with_items:
-     - php
-     - php-mysql
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
 
-  - name: ensure httpd is running
-    service:
-      name: httpd 
+  - name: démarrage Docker
+    service: 
+      name: docker
       state: started
 
-  - name: Open port 80 for http access
-    firewalld:
-      service: http
-      permanent: true
-      state: enabled
+################## INSTALLATION Docker #############################
 
-  - name: Restart the firewalld service to load in the firewall changes
-    service: 
-      name: firewalld 
-      state: restarted
+  - name: télécharger le binary et le mettre dans /usr/local/bin
+    become: yes
+    shell: curl -L "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
-  - name: Create mysite directory if not exists
-    file: path=/var/www/html/mysite/ state=directory
+  - name: Permissions
+    become: yes
+    shell: chmod +x /usr/local/bin/docker-compose
 
-  - name: Copy mysite web files to the webserver
-    template: src={{ item.src }} dest={{ item.dest }}
-    with_items:
-     - { src: 'mysite/ajouter.html', dest: '/var/www/html/mysite/ajouter.html' }
-     - { src: 'mysite/insert.php.j2', dest: '/var/www/html/mysite/insert.php' }
-     - { src: 'mysite/index.php.j2', dest: '/var/www/html/mysite/index.php' }
+################## INSTALLATION k8s #############################
 
+#  - name: mise à jour
+#    shell: yum update
+  
+
+  - name: Installer kubectl
+    shell : curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+
+
+  - name: Permissions
+    become: yes
+    shell : chmod +x ./kubectl
+
+  - name: Copie
+    become: yes
+    shell : mv ./kubectl /usr/local/bin/kubectl
+
+  - name: Installer minikube
+    shell : curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/ 
+      

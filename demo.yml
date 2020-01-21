@@ -41,7 +41,7 @@
 
   - name: Copy database dump file to remote host
     copy:
-      src: stage.sql
+      src: ./webfiles/creation.sql
       dest: /tmp
 
   - name: supprime une éventuelle BDD "stage"
@@ -53,7 +53,7 @@
     mysql_db:
       name: "{{ dbname }}"
       state: import
-      target: /tmp/stage.sql
+      target: /tmp/creation.sql
 
 ######################## INSTALLATION HTTPD  #########################
 
@@ -82,11 +82,15 @@
   - name: Create mysite directory if not exists
     file: path=/var/www/html/webfiles/ state=directory
 
-  - name: Copie du dossier webfiles/ to the distant server
-    copy:
-      src: ./webfiles
-      dest: /var/www/html/
+#  - name: Copie du dossier webfiles/ to the distant server
+#    copy:
+#      src: ./webfiles
+#      dest: /var/www/html/
 
+  - name: Ansible Template Example
+    template:
+      src: param.php.j2
+      dest: /var/www/html/webfiles/param.php
 
    
      
