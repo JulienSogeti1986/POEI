@@ -1,70 +1,97 @@
 ---
 
 
-- name: ajout du Master Serveur
+- name: ajout du Master Serveur avec Minikube
 
   hosts: prodserver1
   remote_user: root
 
   tasks:
 
+  - block:
 
-################## INSTALLATION Docker #############################
+    - name: set repository
+      become: true
+      shell: yum install -y yum-utils device-mapper-persistent-data lvm2
+     
 
-  - name: Installation des packages
-    yum:
-      name: "{{ item }}" 
-      state: present
-    with_items:
-      - yum-utils
-      - device-mapper-persistent-data
-      - lvm2
+    - name: use stable repository
+      become: true
+      shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    
+    - name: installer docker engine
+      become: true
+      shell: yum install docker-ce docker-ce-cli containerd.io
 
-  - name: Set up d'un repository stable
-    shell : yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    - name: Start and Enable docker service
+      shell: systemctl enable docker; systemctl start docker
+      args:
+        executable:  /bin/bash
+      register: docker_enable
+      become: true
 
-  - name: Installation Docker Engine
-    yum:
-      name: "{{ item }}" 
-      state: present
-    with_items:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
 
-  - name: démarrage Docker
-    service: 
-      name: docker
-      state: started
+    - name: check docker service status
+      shell:  systemctl status docker
+      args: 
+        executable: /bin/bash
+      register: docker_status
+      become: true
+      until: "'active' and 'running' in docker_status.stdout"
+      delay: 30
+      retries: 5
+       
 
-################## INSTALLATION Docker #############################
+    
 
-  - name: télécharger le binary et le mettre dans /usr/local/bin
-    become: yes
-    shell: curl -L "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    - name: Download minikube packages
+      shell: curl {{ item }}
+      args:
+        executable:  /bin/bash
+      become: true
+      with_items:
+        - -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        - -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
 
-  - name: Permissions
-    become: yes
-    shell: chmod +x /usr/local/bin/docker-compose
+    - name: Change file permissions
+      shell: chmod +x minikube kubectl
+      become: true
 
-################## INSTALLATION k8s #############################
+    - name: Move to the bin folder
+      shell:  mv minikube kubectl /usr/local/bin/
+      become: true
 
-#  - name: mise à jour
-#    shell: yum update
+    - name: Setup the directory for storing Minikube and kubectl configuration.
+      shell: mkdir $HOME/.kube || true
+      become: true
+
+    - name: Create empty file(config) under directory.
+      shell: touch $HOME/.kube/config
+      become: true
+
+    - name: copy these configuration  line
+      shell: |
+        echo 'export MINIKUBE_WANTUPDATENOTIFICATION=false' >> ~/.profile,
+        echo 'export MINIKUBE_WANTREPORTERRORPROMPT=false' >> ~/.profile
+        echo 'export MINIKUBE_HOME=$HOME' >> ~/.profile
+        echo 'export CHANGE_MINIKUBE_NONE_USER=true' >> ~/.profile
+        echo 'export KUBECONFIG=$HOME/.kube/config' >> ~/.profile
+      become: true
+
+    - name: Start Minikube with option vm-driver=none
+      shell: minikube start --vm-driver=none
+      become: true
+
+    - name: After minikube configuration, we check minikube status
+      shell: minikube status
+      args:
+        executable: /bin/bash
+      register: minikube_status
+      become: true
+      until: "'minikube' and 'Running' in minikube_status.stdout"
+      delay: 30
+      retries: 10
+
+    
+
   
-
-  - name: Installer kubectl
-    shell : curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-
-
-  - name: Permissions
-    become: yes
-    shell : chmod +x ./kubectl
-
-  - name: Copie
-    become: yes
-    shell : mv ./kubectl /usr/local/bin/kubectl
-
-  - name: Installer minikube
-    shell : curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/ 
-      
