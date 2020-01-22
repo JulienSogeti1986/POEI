@@ -1,0 +1,27 @@
+version: "3"
+services:
+
+  db:
+    build: ./mysql
+    restart: always
+    ports: 
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: train
+      MYSQL_USER: julien
+      MYSQL_PASSWORD: password
+    
+
+  web:
+    build: ./httpd
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    
+     
+
+  
+ 
+
