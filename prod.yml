@@ -100,7 +100,7 @@
     - name: copie des yml
       become: true
       copy: 
-        src: ./k8sDeploy/*
+        src: ./k8sDeploy/
         dest: /root/ymlrepository/
         mode: '0755'
 
@@ -123,10 +123,10 @@
       become: true
       shell: kubectl apply -f {{ item }}
       with_items:
-        - app.yml
-        - app_svc.yml
-        - db.yml
-        - db_svc.yml
+        - /root/ymlrepository/app.yml
+        - /root/ymlrepository/app_svc.yml
+        - /root/ymlrepository/db.yml
+        - /root/ymlrepository/db_svc.yml
 
     
 

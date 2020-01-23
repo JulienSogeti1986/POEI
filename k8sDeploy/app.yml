@@ -6,7 +6,7 @@ metadata:
   labels:
     app: app-server
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: app-server
@@ -24,9 +24,9 @@ spec:
 
         env:
         - name: MYSQL_ROOT_PASSWORD
-           value: password
+          value: password
         - name: MYSQL_USER
-           value: julien
+          value: julien
         - name: MYSQL_PASSWORD
-            value: password
+          value: password
         
