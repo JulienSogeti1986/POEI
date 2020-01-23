@@ -78,9 +78,36 @@
         echo 'export KUBECONFIG=$HOME/.kube/config' >> ~/.profile
       become: true
 
+    - name: ajouter minikube au PATH
+      shell: echo "export PATH=/usr/local/bin:$PATH" >> /etc/profile
+      become: true
+ 
+    - name: source
+      shell: source /etc/profile
+      become: true
+    
+    - name: creation répertoire pour les yml
+      become: true
+      file: 
+        path: /root/ymlrepository
+        state: directory
+        mode: '0755'
+
+    - name: aller dans le répertoire créé
+      become: true
+      shell: cd /root/ymlrepository
+
+    - name: copie des yml
+      become: true
+      copy: 
+        src: ./k8sDeploy/*
+        dest: /root/ymlrepository/
+        mode: '0755'
+
     - name: Start Minikube with option vm-driver=none
       shell: minikube start --vm-driver=none
       become: true
+
 
     - name: After minikube configuration, we check minikube status
       shell: minikube status
@@ -91,6 +118,15 @@
       until: "'minikube' and 'Running' in minikube_status.stdout"
       delay: 30
       retries: 10
+
+    - name: activation des yml
+      become: true
+      shell: kubectl apply -f {{ item }}
+      with_items:
+        - app.yml
+        - app_svc.yml
+        - db.yml
+        - db_svc.yml
 
     
 
